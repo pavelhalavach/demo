@@ -1,9 +1,9 @@
 package com.demo.controller;
 
 import com.demo.dto.GameDTO;
-import com.demo.dto.RegisterRequestDTO;
-import com.demo.service.GameServiceJPA;
-import com.demo.service.UserServiceJPA;
+import com.demo.dto.RegisterSellerRequestDTO;
+import com.demo.service.GameService;
+import com.demo.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -12,17 +12,17 @@ import java.util.Map;
 
 @RestController
 public class RegisterController {
-    private final UserServiceJPA userServiceJPA;
-    private final GameServiceJPA gameServiceJPA;
+    private final UserService userService;
+    private final GameService gameService;
 
-    public RegisterController(UserServiceJPA userServiceJPA, GameServiceJPA gameServiceJPA) {
-        this.userServiceJPA = userServiceJPA;
-        this.gameServiceJPA = gameServiceJPA;
+    public RegisterController(UserService userService, GameService gameService) {
+        this.userService = userService;
+        this.gameService = gameService;
     }
 
     @GetMapping("/register")
     public Map<String, Object> info(){
-        List<GameDTO> games = gameServiceJPA.findAllGames();
+        List<GameDTO> games = gameService.findAllGames();
         Map<String, Object> response = new HashMap<>();
         response.put("games", games);
 //        response.put("message", """
@@ -35,8 +35,8 @@ public class RegisterController {
     }
 
     @PostMapping("/register")
-    public String saveUser(@RequestBody RegisterRequestDTO registerRequestDTO){
-        userServiceJPA.saveUser(registerRequestDTO);
+    public String saveUser(@RequestBody RegisterSellerRequestDTO registerSellerRequestDTO){
+        userService.saveUser(registerSellerRequestDTO);
         return "register";
     }
 }

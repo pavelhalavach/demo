@@ -1,63 +1,50 @@
 package com.demo.service;
 
-import com.demo.dto.GameDTO;
-import com.demo.dto.RegisterRequestDTO;
+import com.demo.dto.SellerGameRequestDTO;
+import com.demo.dto.RegisterSellerRequestDTO;
 import com.demo.dto.UserDTO;
-import com.demo.entity.Game;
 import com.demo.entity.Role;
 import com.demo.entity.User;
-import com.demo.repository.GameRepository;
 import com.demo.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserServiceJPAImpl implements UserServiceJPA {
+public class UserServiceJPAImpl implements UserService {
     private final UserRepository userRepository;
-    private final GameServiceJPA gameServiceJPA;
+//    private final GameService gameService;
+    private final SellerGameService sellerGameService;
     private final PasswordEncoder passwordEncoder;
 
     public UserServiceJPAImpl(
             UserRepository userRepository,
-            GameRepository gameRepository, GameServiceJPA gameServiceJPA,
+            GameService gameService,
+            SellerGameService sellerGameService,
             PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.gameServiceJPA = gameServiceJPA;
+//        this.gameService = gameService;
+        this.sellerGameService = sellerGameService;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public User saveUser(RegisterRequestDTO registerRequestDTO) {
+    public void saveUser(RegisterSellerRequestDTO registerSellerRequestDTO) {
         User user = new User();
-        user.setFirstName(registerRequestDTO.firstName());
-        user.setLastName(registerRequestDTO.lastName());
-        user.setEmail(registerRequestDTO.email());
-        user.setPassword(passwordEncoder.encode(registerRequestDTO.password()));
-        user.setRole(Role.valueOf(registerRequestDTO.role()));
+        user.setFirstName(registerSellerRequestDTO.firstName());
+        user.setLastName(registerSellerRequestDTO.lastName());
+        user.setEmail(registerSellerRequestDTO.email());
+        user.setPassword(passwordEncoder.encode(registerSellerRequestDTO.password()));
+        user.setRole(Role.valueOf(registerSellerRequestDTO.role()));
 //        user.setVerified("ADMIN".equals(user.getRole().toString()));
         user.setVerified(false);
+        user = userRepository.save(user);
 
-        List<Game> games = new ArrayList<>();
-
-        for (GameDTO gameDTO : registerRequestDTO.games()){
-            Game gameFromDB = gameServiceJPA.findByNameNormalized(gameDTO.getName());
-            if (gameFromDB == null){
-//                Game game = new Game();
-//                game.setName(gameDTO.getName());
-//                gameServiceJPA.saveGame(gameDTO);
-                games.add(gameServiceJPA.saveGame(gameDTO));
-            } else {
-                games.add(gameFromDB);
-            }
+        for (SellerGameRequestDTO sellerGameRequestDTO : registerSellerRequestDTO.games()) {
+            sellerGameService.saveSellerGame(user, sellerGameRequestDTO);
         }
-
-        user.setGames(games);
-
-        return userRepository.save(user);
     }
 
     @Override

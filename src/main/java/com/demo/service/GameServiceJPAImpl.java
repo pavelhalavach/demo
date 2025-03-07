@@ -1,6 +1,7 @@
 package com.demo.service;
 
 import com.demo.dto.GameDTO;
+import com.demo.dto.SellerGameRequestDTO;
 import com.demo.repository.GameRepository;
 import com.demo.entity.Game;
 import org.springframework.stereotype.Service;
@@ -10,7 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class GameServiceJPAImpl implements GameServiceJPA{
+public class GameServiceJPAImpl implements GameService {
 
     GameRepository gameRepository;
 
@@ -31,12 +32,22 @@ public class GameServiceJPAImpl implements GameServiceJPA{
 //    }
 
     @Override
+    public Optional<Game> findById(Integer id) {
+        return gameRepository.findById(id);
+    }
+
+    @Override
     public Game saveGame(GameDTO gameDTO) {
-//        if (gameRepository.existsByName(game.getName())) {
-//            throw new IllegalArgumentException("Game with this name already exists!");
-//        }
         Game game = new Game();
         game.setName(gameDTO.getName());
+        game.setVerified(false);
+        return gameRepository.save(game);
+    }
+
+    @Override
+    public Game saveGame(SellerGameRequestDTO sellerGameRequestDTO) {
+        Game game = new Game();
+        game.setName(sellerGameRequestDTO.name());
         game.setVerified(false);
         return gameRepository.save(game);
     }

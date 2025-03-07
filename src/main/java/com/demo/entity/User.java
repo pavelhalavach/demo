@@ -32,14 +32,6 @@ public class User {
     @Column(nullable = false)
     private boolean isVerified;
 
-    @ManyToMany
-    @JoinTable(
-            name = "seller_games",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "game_id")
-    )
-    private List<Game> games;
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)
     private Date createdAt = new Date();

@@ -13,7 +13,6 @@ public class UserDTO {
     private String firstName;
     private String lastName;
     private String email;
-    private String password;
     private boolean isVerified;
     private String role;
     private List<GameDTO> games;

@@ -4,6 +4,6 @@ package com.demo;
 public class SpringConfig {
 //    @Bean(name="GameService")
 //    public GameService getGameService(){
-//        return new GameServiceImpl();
+//        return new GameServiceJPAImpl();
 //    }
 }

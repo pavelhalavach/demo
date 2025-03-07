@@ -1,9 +1,7 @@
 package com.demo.controller;
 
 import com.demo.dto.GameDTO;
-import com.demo.entity.Game;
-import com.demo.service.GameServiceJPA;
-import org.springframework.security.core.Authentication;
+import com.demo.service.GameService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,10 +9,10 @@ import java.util.Optional;
 
 @RestController
 public class GameController {
-    GameServiceJPA gameServiceJPA;
+    GameService gameService;
 
-    public GameController(GameServiceJPA gameServiceJPAJPA) {
-        this.gameServiceJPA = gameServiceJPAJPA;
+    public GameController(GameService gameServiceJPAJPA) {
+        this.gameService = gameServiceJPAJPA;
     }
 
     @GetMapping("/home")
@@ -30,26 +28,26 @@ public class GameController {
 //
     @GetMapping("/games")
     public List<GameDTO> findAllGames(){
-        return gameServiceJPA.findAllGames();
+        return gameService.findAllGames();
     }
 
 //    @GetMapping("/games/search/{search}")
 //    public List<Game> searchGames(@PathVariable(name="search") String search){
-//        return gameServiceJPA.searchGames(search);
+//        return gameService.searchGames(search);
 //    }
 
 //    @PostMapping("/saveGame")
 //    public Game saveGame(@RequestBody Game newGame){
-//        return gameServiceJPA.saveGame(newGame);
+//        return gameService.saveGame(newGame);
 //    }
 
     @GetMapping("/games/{id}")
     public Optional<GameDTO> findGameById(@PathVariable(name="id") Integer id){
-        return gameServiceJPA.findGameById(id);
+        return gameService.findGameById(id);
     }
 
     @DeleteMapping("/games/delete/{id}")
     public void deleteGame(@PathVariable(name="id") Integer id){
-        gameServiceJPA.deleteGame(id);
+        gameService.deleteGame(id);
     }
 }
