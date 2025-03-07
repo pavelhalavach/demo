@@ -1,8 +1,9 @@
 package com.demo.controller;
 
-import com.demo.dto.SellerGameRequestDTO;
+import com.demo.dto.SellerGameDTO;
 import com.demo.entity.SellerGame;
 import com.demo.entity.User;
+import com.demo.security.CustomUserDetails;
 import com.demo.service.SellerGameService;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,16 +19,18 @@ public class SellerGameController {
         this.sellerGameService = sellerGameService;
     }
 
-    @PostMapping("/addGame")
-    public String addGame(@RequestBody SellerGameRequestDTO sellerGameRequestDTO, Authentication authentication) {
-        User seller = (User) authentication.getPrincipal();
-        sellerGameService.saveSellerGame(seller, sellerGameRequestDTO);
-        return "Game added";
+    @PostMapping("/saveGame")
+    public String addGame(@RequestBody SellerGameDTO sellerGameDTO, Authentication authentication) {
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        User seller = customUserDetails.getUser();
+        sellerGameService.saveSellerGame(seller, sellerGameDTO);
+        return "Game saved";
     }
 
-    @GetMapping("/getGames")
-    public List<SellerGame> getGames(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        return sellerGameService.getSellerGames(user);
+    @GetMapping("/findGames")
+    public List<SellerGameDTO> getGames(Authentication authentication) {
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        User seller = customUserDetails.getUser();
+        return sellerGameService.findAllSellerGames(seller);
     }
 }

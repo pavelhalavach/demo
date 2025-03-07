@@ -1,31 +1,31 @@
-package com.demo.service;
+package com.demo.service.impl;
 
-import com.demo.dto.SellerGameRequestDTO;
+import com.demo.dto.SellerGameDTO;
 import com.demo.dto.RegisterSellerRequestDTO;
 import com.demo.dto.UserDTO;
 import com.demo.entity.Role;
 import com.demo.entity.User;
 import com.demo.repository.UserRepository;
+import com.demo.service.SellerGameService;
+import com.demo.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 public class UserServiceJPAImpl implements UserService {
     private final UserRepository userRepository;
-//    private final GameService gameService;
     private final SellerGameService sellerGameService;
     private final PasswordEncoder passwordEncoder;
 
     public UserServiceJPAImpl(
             UserRepository userRepository,
-            GameService gameService,
             SellerGameService sellerGameService,
             PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-//        this.gameService = gameService;
         this.sellerGameService = sellerGameService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -42,23 +42,32 @@ public class UserServiceJPAImpl implements UserService {
         user.setVerified(false);
         user = userRepository.save(user);
 
-        for (SellerGameRequestDTO sellerGameRequestDTO : registerSellerRequestDTO.games()) {
-            sellerGameService.saveSellerGame(user, sellerGameRequestDTO);
+        for (SellerGameDTO sellerGameDTO : registerSellerRequestDTO.games()) {
+            sellerGameService.saveSellerGame(user, sellerGameDTO);
         }
     }
 
     @Override
     public List<UserDTO> findAllUsers() {
-        List<UserDTO> usersDTO;
-        List<User> users = userRepository.findAll();
-        return null;
+        List<UserDTO> usersDTO = new ArrayList<>();
+        for (User user : userRepository.findAll()){
+            usersDTO.add(new UserDTO(
+                    user.getFirstName(),
+                    user.getLastName(),
+                    sellerGameService.findAllSellerGames(user)
+            ));
+        }
+        return usersDTO;
     }
 
     @Override
-    public Optional<UserDTO> findUserById(Integer id) {
-        UserDTO userDTO;
-        Optional<User> user = userRepository.findById(id);
-        return null;
+    public UserDTO findUserById(Integer id) {
+        return userRepository.findById(id)
+                .map(user -> new UserDTO(
+                        user.getFirstName(),
+                        user.getLastName(),
+                        sellerGameService.findAllSellerGames(user)
+                )).orElseThrow(() -> new RuntimeException("Such game is not found"));
     }
 
     @Override

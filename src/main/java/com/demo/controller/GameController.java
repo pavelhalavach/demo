@@ -42,7 +42,7 @@ public class GameController {
 //    }
 
     @GetMapping("/games/{id}")
-    public Optional<GameDTO> findGameById(@PathVariable(name="id") Integer id){
+    public GameDTO findGameById(@PathVariable(name="id") Integer id){
         return gameService.findGameById(id);
     }
 

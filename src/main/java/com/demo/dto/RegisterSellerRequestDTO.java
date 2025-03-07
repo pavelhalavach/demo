@@ -8,6 +8,6 @@ public record RegisterSellerRequestDTO(
         String email,
         String password,
         String role, //ADD EXCEPTION IF role IS NOT ADMIN OR SELLER
-        List<SellerGameRequestDTO> games
+        List<SellerGameDTO> games
 ) {
 }

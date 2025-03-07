@@ -1,6 +1,6 @@
 package com.demo.dto;
 
-public record SellerGameRequestDTO(
+public record SellerGameDTO(
     String name,
     String description
 ){

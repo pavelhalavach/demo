@@ -10,15 +10,15 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "seller_games")
+@IdClass(SellerGameId.class)
 public class SellerGame {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
 
+    @Id
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User seller;
 
+    @Id
     @ManyToOne
     @JoinColumn(name = "game_id")
     private Game game;
