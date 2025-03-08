@@ -1,4 +1,9 @@
 package com.demo.dto;
 
-public class RegisterAdminRequestDTO {
+public record RegisterAdminRequestDTO (
+    String firstName,
+    String lastName,
+    String email,
+    String password
+) {
 }

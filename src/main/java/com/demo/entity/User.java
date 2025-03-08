@@ -1,6 +1,7 @@
 package com.demo.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.*;
 
 import java.util.Date;
@@ -16,27 +17,25 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @Column(nullable = false, unique = true)
+    private String nickname;
 
     @Column(nullable = false)
     private String firstName;
 
     @Column(nullable = false)
     private String lastName;
-
-    @Column(nullable = false, unique = true)
+//    @Valid
+    @Column(unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private boolean isVerified;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = false, updatable = false)
     private Date createdAt = new Date();
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Role role;
 }

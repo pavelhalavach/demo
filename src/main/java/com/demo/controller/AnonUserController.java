@@ -1,13 +1,11 @@
 package com.demo.controller;
 
+import com.demo.dto.AddCommentRequestDTO;
+import com.demo.dto.SellerDTO;
 import com.demo.dto.SellerGameDTO;
-import com.demo.dto.UserDTO;
 import com.demo.service.SellerGameService;
 import com.demo.service.UserService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,18 +21,26 @@ public class AnonUserController {
     }
 
     @GetMapping("/sellers/findAll")
-    public List<UserDTO> findSellers(){
-        return userService.findAllUsers();
+    public List<SellerDTO> findSellers(){
+        return userService.findAllSellers();
     }
 
     @GetMapping("/sellers/{id}")
-    public UserDTO findSellerById(@PathVariable Integer id) {
-        return userService.findUserById(id);
+    public SellerDTO findSellerById(@PathVariable Integer id) {
+        return userService.findSellerById(id);
     }
 
     @GetMapping("/sellers/{id}/games")
     public List<SellerGameDTO> findSellerGamesBySellerId(@PathVariable Integer id) {
         return sellerGameService.findAllSellerGamesById(id);
+    }
+
+
+
+    @PostMapping("/sellers/addComment")
+    public String addComment(@RequestBody AddCommentRequestDTO addCommentRequestDTO){
+        userService.saveSellerByAnonUser(addCommentRequestDTO.sellerDTO(), addCommentRequestDTO.commentDTO());
+        return "register";
     }
 
 

@@ -8,14 +8,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface GameService {
-        Optional<Game> findById(Integer id);
-        Game saveGame(GameDTO gameDTO);
+        Game saveGame(SellerGameDTO sellerGameDTO);
         List<GameDTO> findAllGames();
         GameDTO findGameById(Integer id);
         void deleteGame(Integer id);
-        Game findByNameNormalized(String name);
 
-        Game saveGame(SellerGameDTO sellerGameDTO);
+        Game findByNameNormalized(String name);
 }
 
 

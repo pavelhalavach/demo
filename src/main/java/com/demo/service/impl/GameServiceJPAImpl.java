@@ -20,31 +20,6 @@ public class GameServiceJPAImpl implements GameService {
         this.gameRepository = gameRepository;
     }
 
-//    public Game isGamePresent(GameDTO gameDTO){
-//        Game gameFromDB = gameRepository.findByNameNormalized(gameDTO.getName());
-//        if (gameFromDB == null){
-//            Game game = new Game();
-//            game.setName(gameDTO.getName());
-//            gameRepository.save(game);
-//            games.add(game);
-//        } else {
-//            games.add(gameFromDB);
-//        }
-//    }
-
-    @Override
-    public Optional<Game> findById(Integer id) {
-        return gameRepository.findById(id);
-    }
-
-    @Override
-    public Game saveGame(GameDTO gameDTO) {
-        Game game = new Game();
-        game.setName(gameDTO.getName());
-        game.setVerified(false);
-        return gameRepository.save(game);
-    }
-
     @Override
     public Game saveGame(SellerGameDTO sellerGameDTO) {
         Game game = new Game();

@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @RestController
 public class GameController {
-    GameService gameService;
+    private final GameService gameService;
 
     public GameController(GameService gameServiceJPAJPA) {
         this.gameService = gameServiceJPAJPA;
