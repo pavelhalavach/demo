@@ -1,6 +1,7 @@
 package com.demo.service.impl;
 
 import com.demo.dto.*;
+import com.demo.entity.Comment;
 import com.demo.entity.Role;
 import com.demo.entity.User;
 import com.demo.repository.UserRepository;
@@ -70,14 +71,22 @@ public class UserServiceJPAImpl implements UserService {
 
     @Override
     public void saveAdmin(RegisterAdminRequestDTO registerAdminRequestDTO){
-
+        User admin = new User();
+        admin.setNickname(registerAdminRequestDTO.nickname());
+        admin.setFirstName(registerAdminRequestDTO.firstName());
+        admin.setLastName(registerAdminRequestDTO.lastName());
+        admin.setEmail(registerAdminRequestDTO.email());
+        admin.setPassword(passwordEncoder.encode(registerAdminRequestDTO.password()));
+        admin.setRole(Role.valueOf("ADMIN"));
+        admin.setVerified(false);
+        userRepository.save(admin);
     }
 
 
     @Override
-    public List<SellerDTO> findAllSellers() {
+    public List<SellerDTO> findAllSellers(boolean isVerified) {
         List<SellerDTO> usersDTO = new ArrayList<>();
-        for (User seller : userRepository.findAllByRole(Role.SELLER)){
+        for (User seller : userRepository.findAllByRoleAndIsVerified(Role.SELLER, isVerified)){
             usersDTO.add(new SellerDTO(
                     seller.getNickname(),
                     seller.getFirstName(),
@@ -87,6 +96,28 @@ public class UserServiceJPAImpl implements UserService {
             ));
         }
         return usersDTO;
+    }
+
+    @Override
+    public void reviewSeller(SellerDTO sellerDTO, boolean decision){
+        User seller = userRepository.findByNickname(sellerDTO.nickname());
+        if (decision) {
+            seller.setVerified(true);
+            userRepository.save(seller);
+        } else {
+            userRepository.delete(seller);
+        }
+    }
+
+    @Override
+    public void reviewComment(CommentDTO commentDTO, boolean decision){
+        Comment comment = commentService.findCommentByMessage(commentDTO.message());
+        if (decision) {
+            comment.setVerified(true);
+            commentService.saveComment(comment.getSeller(), commentDTO);
+        } else {
+            commentService.deleteComment(comment);
+        }
     }
 
     @Override

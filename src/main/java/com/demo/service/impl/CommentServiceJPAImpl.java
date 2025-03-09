@@ -1,7 +1,6 @@
 package com.demo.service.impl;
 
 import com.demo.dto.CommentDTO;
-import com.demo.dto.GameDTO;
 import com.demo.entity.Comment;
 import com.demo.entity.User;
 import com.demo.repository.CommentRepository;
@@ -33,7 +32,17 @@ public class CommentServiceJPAImpl implements CommentService {
 
     @Override
     public List<CommentDTO> findAllCommentsBySeller(User seller) {
-        return commentRepository.findAllBySeller(seller)
+        return commentRepository.findAllBySellerAndIsVerified(seller, true)
+                .stream()
+                .map(comment -> new CommentDTO(
+                        comment.getMessage(),
+                        comment.getRating()
+                ))
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<CommentDTO> findAllCommentsForAdmin(){
+        return commentRepository.findAllByIsVerified(false)
                 .stream()
                 .map(comment -> new CommentDTO(
                         comment.getMessage(),
@@ -43,12 +52,22 @@ public class CommentServiceJPAImpl implements CommentService {
     }
 
     @Override
-    public GameDTO findCommentById(Integer id) {
+    public Comment findCommentByMessage(String message){
+        return commentRepository.findCommentByMessage(message);
+    }
+
+    @Override
+    public void deleteComment(Comment comment) {
+        commentRepository.delete(comment);
+    }
+    @Override
+    public CommentDTO findCommentById(Integer id) {
         return null;
     }
 
     @Override
     public void deleteCommentById(Integer id) {
+
 
     }
 }

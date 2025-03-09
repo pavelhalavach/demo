@@ -1,4 +1,4 @@
-package com.demo.controller;
+package com.demo.bin;
 
 import com.demo.service.CommentService;
 import org.springframework.web.bind.annotation.RestController;

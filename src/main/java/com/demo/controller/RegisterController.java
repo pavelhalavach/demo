@@ -17,7 +17,7 @@ public class RegisterController {
         this.gameService = gameService;
     }
 
-    @GetMapping("/register")
+    @GetMapping("/register/seller")
     public RegisterInfoDTO giveInfoForSeller(){
         List<GameDTO> games = gameService.findAllGames();
         String message = "Welcome! You can register a Seller Profile and select Games in which you sell items. " +
@@ -27,11 +27,29 @@ public class RegisterController {
         return new RegisterInfoDTO(message, games);
     }
 
-    @PostMapping("/register")
+    @PostMapping("/register/seller")
     public String saveSeller(@RequestBody RegisterSellerRequestDTO registerSellerRequestDTO){
         userService.saveSeller(registerSellerRequestDTO);
         return "register";
     }
+
+//    @GetMapping("/register/admin")
+//    public RegisterInfoDTO giveInfoForAdmin(){
+//        List<GameDTO> games = gameService.findAllGames();
+//        String message = "Welcome! You can register a Seller Profile and select Games in which you sell items. " +
+//                "If you can't find needed Game you can also add it. " +
+//                "It will take some time until the Administrator approves it. " +
+//                "Available games are: ";
+//        return new RegisterInfoDTO(message, games);
+//    }
+
+    @PostMapping("/register/admin")
+    public String saveAdmin(@RequestBody RegisterAdminRequestDTO registerAdminRequestDTO){
+        userService.saveAdmin(registerAdminRequestDTO);
+        return "register";
+    }
+
+
 
 
 }

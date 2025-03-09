@@ -22,20 +22,20 @@ public class AnonUserController {
 
     @GetMapping("/sellers/findAll")
     public List<SellerDTO> findSellers(){
-        return userService.findAllSellers();
-    }
-
-    @GetMapping("/sellers/{id}")
-    public SellerDTO findSellerById(@PathVariable Integer id) {
-        return userService.findSellerById(id);
-    }
-
-    @GetMapping("/sellers/{id}/games")
-    public List<SellerGameDTO> findSellerGamesBySellerId(@PathVariable Integer id) {
-        return sellerGameService.findAllSellerGamesById(id);
+        return userService.findAllSellers(true);
     }
 
 
+//    ???
+//    @GetMapping("/sellers/{id}")
+//    public SellerDTO findSellerById(@PathVariable Integer id) {
+//        return userService.findSellerById(id);
+//    }
+//
+//    @GetMapping("/sellers/{id}/games")
+//    public List<SellerGameDTO> findSellerGamesBySellerId(@PathVariable Integer id) {
+//        return sellerGameService.findAllSellerGamesById(id);
+//    }
 
     @PostMapping("/sellers/addComment")
     public String addComment(@RequestBody AddCommentRequestDTO addCommentRequestDTO){

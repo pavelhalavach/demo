@@ -9,5 +9,8 @@ import java.util.List;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Integer> {
-    List<Comment> findAllBySeller(User seller);
+    List<Comment> findAllBySellerAndIsVerified(User seller, boolean isVerified);
+    List<Comment> findAllByIsVerified(boolean isVerified);
+    Comment findCommentByMessage(String message);
+
 }
