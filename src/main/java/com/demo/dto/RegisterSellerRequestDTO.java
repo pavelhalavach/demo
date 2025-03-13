@@ -8,6 +8,6 @@ public record RegisterSellerRequestDTO(
         String lastName,
         String email,
         String password,
-        List<SellerGameDTO> games
+        List<SellerOfferDTO> games
 ) {
 }

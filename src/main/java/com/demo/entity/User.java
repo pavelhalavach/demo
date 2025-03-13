@@ -25,7 +25,7 @@ public class User {
 
     @Column(nullable = false)
     private String lastName;
-//    @Valid
+
     @Column(unique = true)
     private String email;
 

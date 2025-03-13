@@ -1,21 +1,18 @@
 package com.demo.service;
 
 import com.demo.dto.CommentDTO;
-import com.demo.entity.Comment;
 import com.demo.entity.User;
 
 import java.util.List;
 
 public interface CommentService {
-    void saveComment(User seller, CommentDTO commentDTO);
+    void saveCommentByAnonUser(User seller, CommentDTO commentDTO);
+    List<CommentDTO> findAllVerifiedCommentsBySeller(User seller);
     List<CommentDTO> findAllCommentsBySeller(User seller);
 
-    List<CommentDTO> findAllCommentsForAdmin();
+    List<CommentDTO> findAllCommentsByIsVerified(boolean isVerified);
 
-    Comment findCommentByMessage(String message);
+    void reviewComment(Integer id, boolean decision);
 
-    CommentDTO findCommentById(Integer id);
-    void deleteCommentById(Integer id);
-
-    void deleteComment(Comment comment);
+    Float findAverageRatingBySellerId(Integer id);
 }

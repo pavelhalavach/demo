@@ -1,27 +1,23 @@
 package com.demo.service;
 
-import com.demo.dto.CommentDTO;
-import com.demo.dto.RegisterAdminRequestDTO;
-import com.demo.dto.RegisterSellerRequestDTO;
-import com.demo.dto.SellerDTO;
+import com.demo.dto.*;
+import com.demo.entity.Role;
 
 import java.util.List;
 
 public interface UserService {
     void saveSeller(RegisterSellerRequestDTO registerSellerRequestDTO);
     void saveSellerByAnonUser(SellerDTO sellerDTO, CommentDTO commentDTO);
+
+    //  ADDING COMMENT TO EXISTING SELLER
+    void saveSellerByAnonUser(Integer id, CommentDTO commentDTO);
+
     void saveAdmin(RegisterAdminRequestDTO registerAdminRequestDTO);
-//    List<SellerDTO> findAllSellers();
-
-    List<SellerDTO> findAllSellers(boolean isVerified);
-
-    void reviewSeller(SellerDTO sellerDTO, boolean decision);
-
-    void reviewComment(CommentDTO commentDTO, boolean decision);
-
+    List<SellerDTO> findAllUsersByIsVerified(Role role, boolean isVerified);
+    void reviewUser(Integer id, boolean decision);
     SellerDTO findSellerById(Integer id);
+    List<ShowTopSellersResponseDTO> sortSellersByRating();
+    List<SellerDTO> findSellerByGameId(Integer id);
 
-    SellerDTO findUserByEmail();
-
-    void deleteUser(Integer id);
+    List<ShowTopSellersResponseDTO> sortSellersByRatingInRange(Float min, Float max);
 }

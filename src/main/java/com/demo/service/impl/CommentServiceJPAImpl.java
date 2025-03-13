@@ -20,7 +20,7 @@ public class CommentServiceJPAImpl implements CommentService {
 
 
     @Override
-    public void saveComment(User seller, CommentDTO commentDTO) {
+    public void saveCommentByAnonUser(User seller, CommentDTO commentDTO) {
         Comment comment = new Comment();
         comment.setMessage(commentDTO.message());
         comment.setRating(commentDTO.rating());
@@ -31,20 +31,22 @@ public class CommentServiceJPAImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDTO> findAllCommentsBySeller(User seller) {
+    public List<CommentDTO> findAllVerifiedCommentsBySeller(User seller) {
         return commentRepository.findAllBySellerAndIsVerified(seller, true)
                 .stream()
                 .map(comment -> new CommentDTO(
+                        comment.getId(),
                         comment.getMessage(),
                         comment.getRating()
                 ))
                 .collect(Collectors.toList());
     }
     @Override
-    public List<CommentDTO> findAllCommentsForAdmin(){
-        return commentRepository.findAllByIsVerified(false)
+    public List<CommentDTO> findAllCommentsBySeller(User seller){
+        return commentRepository.findAllBySeller(seller)
                 .stream()
                 .map(comment -> new CommentDTO(
+                        comment.getId(),
                         comment.getMessage(),
                         comment.getRating()
                 ))
@@ -52,22 +54,31 @@ public class CommentServiceJPAImpl implements CommentService {
     }
 
     @Override
-    public Comment findCommentByMessage(String message){
-        return commentRepository.findCommentByMessage(message);
+    public List<CommentDTO> findAllCommentsByIsVerified(boolean isVerified) {
+        return commentRepository.findAllByIsVerified(isVerified)
+                .stream()
+                .map(comment -> new CommentDTO(
+                        comment.getId(),
+                        comment.getMessage(),
+                        comment.getRating()
+                ))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteComment(Comment comment) {
-        commentRepository.delete(comment);
+    public void reviewComment(Integer id, boolean decision){
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Comment was not found with id " + id));
+        if (decision) {
+            comment.setVerified(true);
+            commentRepository.save(comment);
+        } else {
+            commentRepository.delete(comment);
+        }
     }
-    @Override
-    public CommentDTO findCommentById(Integer id) {
-        return null;
-    }
 
     @Override
-    public void deleteCommentById(Integer id) {
-
-
+    public Float findAverageRatingBySellerId(Integer id){
+        return commentRepository.findAverageRatingBySellerId(id);
     }
 }

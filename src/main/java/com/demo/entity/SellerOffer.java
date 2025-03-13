@@ -9,9 +9,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "seller_games")
-@IdClass(SellerGameId.class)
-public class SellerGame {
+@Table(name = "seller_offer")
+@IdClass(SellerOfferId.class)
+public class SellerOffer {
 
     @Id
     @ManyToOne

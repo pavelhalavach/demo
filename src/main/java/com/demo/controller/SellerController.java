@@ -1,9 +1,10 @@
 package com.demo.controller;
 
-import com.demo.dto.SellerGameDTO;
+import com.demo.dto.SellerOfferDTO;
 import com.demo.entity.User;
 import com.demo.security.CustomUserDetails;
-import com.demo.service.SellerGameService;
+import com.demo.service.SellerOfferService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,25 +13,43 @@ import java.util.List;
 @RestController
 @RequestMapping("/seller")
 public class SellerController {
-    private final SellerGameService sellerGameService;
+    private final SellerOfferService sellerOfferService;
 
-    public SellerController(SellerGameService sellerGameService) {
-        this.sellerGameService = sellerGameService;
+    public SellerController(SellerOfferService sellerOfferService) {
+        this.sellerOfferService = sellerOfferService;
     }
 
-    //нужно ли перенести все в юзер сервис
-    @PostMapping("/saveGame")
-    public String addGame(@RequestBody SellerGameDTO sellerGameDTO, Authentication authentication) {
+    @PostMapping("/game")
+    public ResponseEntity<String> addGame(@RequestBody SellerOfferDTO sellerOfferDTO, Authentication authentication) {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User seller = customUserDetails.getUser();
-        sellerGameService.saveSellerGame(seller, sellerGameDTO);
-        return "Game saved";
+        sellerOfferService.saveSellerOffer(seller, sellerOfferDTO);
+        return ResponseEntity.ok("Game successfully added");
     }
 
-    @GetMapping("/findSellerGames")
-    public List<SellerGameDTO> getGames(Authentication authentication) {
+    @DeleteMapping("/game/{id}")
+    public ResponseEntity<String> deleteGame(@PathVariable(name="id") Integer id, Authentication authentication){
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User seller = customUserDetails.getUser();
-        return sellerGameService.findAllSellerGames(seller);
+        sellerOfferService.deleteBySellerAndGameId(seller, id);
+        return ResponseEntity.ok("Game successfully deleted");
+    }
+
+    @PutMapping("/game/{id}")
+    public ResponseEntity<String> updateGame(
+            @PathVariable Integer id,
+            @RequestBody String updatedDescription,
+            Authentication authentication){
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        User seller = customUserDetails.getUser();
+        sellerOfferService.updateOfferDescription(seller, id, updatedDescription);
+        return ResponseEntity.ok("Game successfully updated");
+    }
+
+    @GetMapping("/games")
+    public List<SellerOfferDTO> getGames(Authentication authentication) {
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        User seller = customUserDetails.getUser();
+        return sellerOfferService.findAllVerifiedSellerOffers(seller);
     }
 }

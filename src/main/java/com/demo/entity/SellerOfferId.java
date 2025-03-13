@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SellerGameId implements Serializable {
+public class SellerOfferId implements Serializable {
     private Integer seller;
     private Integer game;
 }

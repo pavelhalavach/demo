@@ -52,7 +52,7 @@ public class SecurityConfig {
                             response.setStatus(HttpServletResponse.SC_OK);
                             response.getWriter().write("Logout successful");
                         })
-                        .invalidateHttpSession(true)  // Очищаем сессию при логауте
+                        .invalidateHttpSession(true)
                         .clearAuthentication(true)
                 );
 
