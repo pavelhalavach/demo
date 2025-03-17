@@ -1,11 +1,12 @@
 package com.demo.service.impl;
 
-import com.demo.dto.GameDTO;
-import com.demo.dto.SellerOfferDTO;
-import com.demo.entity.Comment;
+import com.demo.dto.response.GameDTO;
+import com.demo.dto.request.RegisterSellerOfferDTO;
+import com.demo.exception.GameNotFoundException;
 import com.demo.repository.GameRepository;
 import com.demo.entity.Game;
 import com.demo.service.GameService;
+import com.demo.service.ReviewStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,9 +22,9 @@ public class GameServiceJPAImpl implements GameService {
     }
 
     @Override
-    public Game saveGame(SellerOfferDTO sellerOfferDTO) {
+    public Game saveGame(RegisterSellerOfferDTO registerSellerOfferDTO) {
         Game game = new Game();
-        game.setName(sellerOfferDTO.name());
+        game.setName(registerSellerOfferDTO.name());
         game.setVerified(false);
         return gameRepository.save(game);
     }
@@ -57,7 +58,7 @@ public class GameServiceJPAImpl implements GameService {
                 .map(game -> new GameDTO(
                         game.getId(),
                         game.getName()
-                )).orElseThrow(() -> new RuntimeException("Such game is not found"));
+                )).orElseThrow(() -> new GameNotFoundException(id));
     }
 
     @Override
@@ -66,19 +67,19 @@ public class GameServiceJPAImpl implements GameService {
     }
 
     @Override
-    public void reviewGame(Integer id, boolean decision){
+    public ReviewStatus reviewGame(Integer id, boolean decision){
         Game game = gameRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Comment was not found with id " + id));
+                .orElseThrow(() -> new GameNotFoundException(id));
+        if (game.isVerified()){
+            return ReviewStatus.ALREADY_VERIFIED;
+        }
         if (decision) {
             game.setVerified(true);
             gameRepository.save(game);
         } else {
             gameRepository.delete(game);
         }
+        return ReviewStatus.SUCCESS;
     }
 
-    @Override
-    public void deleteGame(Integer id) {
-        gameRepository.deleteById(id);
-    }
 }

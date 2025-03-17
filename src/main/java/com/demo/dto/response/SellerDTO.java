@@ -1,4 +1,4 @@
-package com.demo.dto;
+package com.demo.dto.response;
 
 import java.util.List;
 

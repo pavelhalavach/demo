@@ -13,7 +13,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     User findByEmail(String email);
     List<User> findAllByRole(Role role);
     Optional<User> findByIdAndRole(Integer id, Role role);
-    User findByNickname(String nickname);
+    Optional<User> findByNickname(String nickname);
     List<User> findAllByRoleAndIsVerified(Role role, boolean isVerified);
     List<User> findAllByIsVerified(boolean isVerified);
 

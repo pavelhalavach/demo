@@ -1,10 +1,12 @@
 package com.demo.controller;
 
-import com.demo.dto.AddCommentRequestDTO;
-import com.demo.dto.CommentDTO;
-import com.demo.dto.SellerDTO;
-import com.demo.dto.ShowTopSellersResponseDTO;
+import com.demo.dto.request.AddCommentRequestDTO;
+import com.demo.dto.request.AddCommentWithRegRequestDTO;
+import com.demo.dto.response.CommentDTO;
+import com.demo.dto.response.SellerDTO;
+import com.demo.dto.response.ShowTopSellersResponseDTO;
 import com.demo.entity.Role;
+import com.demo.service.CommentService;
 import com.demo.service.SellerOfferService;
 import com.demo.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +19,12 @@ import java.util.List;
 public class AnonUserController {
     private final SellerOfferService sellerOfferService;
     private final UserService userService;
+    private final CommentService commentService;
 
-    public AnonUserController(SellerOfferService sellerOfferService, UserService userService) {
+    public AnonUserController(SellerOfferService sellerOfferService, UserService userService, CommentService commentService) {
         this.sellerOfferService = sellerOfferService;
         this.userService = userService;
+        this.commentService = commentService;
     }
 
     @GetMapping("/sellers")
@@ -38,6 +42,17 @@ public class AnonUserController {
         return userService.findSellerById(id);
     }
 
+    @GetMapping("/sellers/{id}/comments")
+    public List<CommentDTO> findCommentsBySellerId(@PathVariable Integer id){
+        return commentService.findAllCommentsBySellerId(id);
+    }
+    @GetMapping("/sellers/{seller_id}/comments/{comment_id}")
+    public CommentDTO findCommentBySellerId(
+            @PathVariable(name = "seller_id") Integer sellerId,
+            @PathVariable(name = "comment_id") Integer commentId){
+        return commentService.findCommentByIdAndSellerId(sellerId, commentId);
+    }
+
     @GetMapping("/sellers/rating")
     public List<ShowTopSellersResponseDTO> showSellersByRating(){
         return userService.sortSellersByRating();
@@ -52,16 +67,17 @@ public class AnonUserController {
     }
 
     @PostMapping("/sellers/comment")
-    public ResponseEntity<String> addCommentAndRegisterSeller(@RequestBody AddCommentRequestDTO addCommentRequestDTO){
-        userService.saveSellerByAnonUser(addCommentRequestDTO.sellerDTO(), addCommentRequestDTO.commentDTO());
+    public ResponseEntity<String> addCommentAndRegisterSeller(
+            @RequestBody AddCommentWithRegRequestDTO addCommentWithRegRequestDTO){
+        userService.saveSellerByAnonUser(addCommentWithRegRequestDTO);
         return ResponseEntity.ok("Comment added");
     }
 
     @PostMapping("/sellers/{id}/comment")
     public ResponseEntity<String> addCommentToExistingSeller(
             @PathVariable Integer id,
-            @RequestBody CommentDTO commentDTO){
-        userService.saveSellerByAnonUser(id, commentDTO);
+            @RequestBody AddCommentRequestDTO addCommentRequestDTO){
+        userService.saveSellerByAnonUser(id, addCommentRequestDTO);
         return ResponseEntity.ok("Comment added");
     }
 

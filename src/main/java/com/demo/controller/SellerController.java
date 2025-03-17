@@ -1,6 +1,7 @@
 package com.demo.controller;
 
-import com.demo.dto.SellerOfferDTO;
+import com.demo.dto.request.RegisterSellerOfferDTO;
+import com.demo.dto.response.SellerOfferDTO;
 import com.demo.entity.User;
 import com.demo.security.CustomUserDetails;
 import com.demo.service.SellerOfferService;
@@ -19,11 +20,21 @@ public class SellerController {
         this.sellerOfferService = sellerOfferService;
     }
 
-    @PostMapping("/game")
-    public ResponseEntity<String> addGame(@RequestBody SellerOfferDTO sellerOfferDTO, Authentication authentication) {
+    @GetMapping("/games")
+    public List<SellerOfferDTO> getGames(Authentication authentication) {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User seller = customUserDetails.getUser();
-        sellerOfferService.saveSellerOffer(seller, sellerOfferDTO);
+        return sellerOfferService.findAllVerifiedSellerOffers(seller);
+    }
+
+    @PostMapping("/game")
+    public ResponseEntity<String> addGame(
+            @RequestBody RegisterSellerOfferDTO registerSellerOfferDTO,
+            Authentication authentication
+    ) {
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        User seller = customUserDetails.getUser();
+        sellerOfferService.saveSellerOffer(seller, registerSellerOfferDTO);
         return ResponseEntity.ok("Game successfully added");
     }
 
@@ -44,12 +55,5 @@ public class SellerController {
         User seller = customUserDetails.getUser();
         sellerOfferService.updateOfferDescription(seller, id, updatedDescription);
         return ResponseEntity.ok("Game successfully updated");
-    }
-
-    @GetMapping("/games")
-    public List<SellerOfferDTO> getGames(Authentication authentication) {
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        User seller = customUserDetails.getUser();
-        return sellerOfferService.findAllVerifiedSellerOffers(seller);
     }
 }

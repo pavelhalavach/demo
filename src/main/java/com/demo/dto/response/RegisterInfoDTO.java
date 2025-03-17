@@ -1,6 +1,4 @@
-package com.demo.dto;
-
-import com.demo.entity.Game;
+package com.demo.dto.response;
 
 import java.util.List;
 

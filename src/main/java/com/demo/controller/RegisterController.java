@@ -1,8 +1,12 @@
 package com.demo.controller;
 
-import com.demo.dto.*;
+import com.demo.dto.request.RegisterAdminRequestDTO;
+import com.demo.dto.request.RegisterSellerRequestDTO;
+import com.demo.dto.response.GameDTO;
+import com.demo.dto.response.RegisterInfoDTO;
 import com.demo.service.GameService;
 import com.demo.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,18 +33,14 @@ public class RegisterController {
     }
 
     @PostMapping("/register/seller")
-    public ResponseEntity<String> saveSeller(@RequestBody RegisterSellerRequestDTO registerSellerRequestDTO){
+    public ResponseEntity<String> saveSeller(@RequestBody @Valid RegisterSellerRequestDTO registerSellerRequestDTO){
         userService.saveSeller(registerSellerRequestDTO);
         return ResponseEntity.ok("Successfully registered");
     }
 
     @PostMapping("/register/admin")
-    public ResponseEntity<String> saveAdmin(@RequestBody RegisterAdminRequestDTO registerAdminRequestDTO){
+    public ResponseEntity<String> saveAdmin(@RequestBody @Valid RegisterAdminRequestDTO registerAdminRequestDTO){
         userService.saveAdmin(registerAdminRequestDTO);
         return ResponseEntity.ok("Successfully registered");
     }
-
-
-
-
 }

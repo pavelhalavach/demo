@@ -2,6 +2,9 @@ package com.demo.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.SQLDelete;
 
 import java.util.Date;
 
@@ -20,6 +23,7 @@ public class Comment {
     private Integer rating;
     @ManyToOne
     @JoinColumn(name = "addressed_to_user_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User seller;
     private boolean isVerified;
     @Temporal(TemporalType.TIMESTAMP)

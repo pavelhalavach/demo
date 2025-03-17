@@ -1,6 +1,6 @@
 package com.demo.controller;
 
-import com.demo.dto.LoginRequestDTO;
+import com.demo.dto.request.LoginRequestDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;

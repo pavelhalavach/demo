@@ -1,10 +1,16 @@
 package com.demo.service.impl;
 
-import com.demo.dto.*;
+import com.demo.dto.request.*;
+import com.demo.dto.response.CommentDTO;
+import com.demo.dto.response.SellerDTO;
+import com.demo.dto.response.SellerOfferDTO;
+import com.demo.dto.response.ShowTopSellersResponseDTO;
 import com.demo.entity.Role;
 import com.demo.entity.User;
+import com.demo.exception.UserNotFoundException;
 import com.demo.repository.UserRepository;
 import com.demo.service.CommentService;
+import com.demo.service.ReviewStatus;
 import com.demo.service.SellerOfferService;
 import com.demo.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,11 +39,6 @@ public class UserServiceJPAImpl implements UserService {
 
     @Override
     public void saveSeller(RegisterSellerRequestDTO registerSellerRequestDTO) {
-        if (userRepository.findByNickname(registerSellerRequestDTO.nickname()) != null){
-            throw new RuntimeException(
-                    "Seller with such nickname " + registerSellerRequestDTO.nickname() + " already exists"
-            );
-        }
         User seller = new User();
         seller.setNickname(registerSellerRequestDTO.nickname());
         seller.setFirstName(registerSellerRequestDTO.firstName());
@@ -48,39 +49,41 @@ public class UserServiceJPAImpl implements UserService {
         seller.setVerified(false);
         seller = userRepository.save(seller);
 
-        for (SellerOfferDTO sellerOfferDTO : registerSellerRequestDTO.games()) {
-            sellerOfferService.saveSellerOffer(seller, sellerOfferDTO);
+        for (RegisterSellerOfferDTO registerSellerOfferDTO : registerSellerRequestDTO.games()) {
+            sellerOfferService.saveSellerOffer(seller, registerSellerOfferDTO);
         }
     }
 
 //  REGISTRATION SELLER PROFILE + ADDING COMMENT
     @Override
-    public void saveSellerByAnonUser(SellerDTO sellerDTO, CommentDTO commentDTO) {
-        if (userRepository.findByNickname(sellerDTO.nickname()) != null){
-            throw new RuntimeException(
-                    "Seller with such nickname " + sellerDTO.nickname() + " already exists"
-            );
-        }
+    public void saveSellerByAnonUser(AddCommentWithRegRequestDTO addCommentWithRegRequestDTO) {
         User seller = new User();
-        seller.setNickname(sellerDTO.nickname());
-        seller.setFirstName(sellerDTO.firstName());
-        seller.setLastName(sellerDTO.lastName());
+        seller.setNickname(addCommentWithRegRequestDTO.sellerNickname());
+        seller.setFirstName(addCommentWithRegRequestDTO.sellerFirstName());
+        seller.setLastName(addCommentWithRegRequestDTO.sellerLastName());
         seller.setRole(Role.valueOf("SELLER"));
         seller.setVerified(false);
         seller = userRepository.save(seller);
-        for (SellerOfferDTO sellerOfferDTO : sellerDTO.games()) {
-            sellerOfferService.saveSellerOffer(seller, sellerOfferDTO);
+        for (String gameName : addCommentWithRegRequestDTO.sellerGames()) {
+            sellerOfferService.saveSellerOffer(seller, new RegisterSellerOfferDTO(gameName, null));
         }
 
-        commentService.saveCommentByAnonUser(seller, commentDTO);
+        commentService.saveCommentByAnonUser(seller,
+                addCommentWithRegRequestDTO.commentMessage(),
+                addCommentWithRegRequestDTO.commentRating()
+        );
     }
 
 //  ADDING COMMENT TO EXISTING SELLER
     @Override
-    public void saveSellerByAnonUser(Integer id, CommentDTO commentDTO) {
+    public void saveSellerByAnonUser(Integer id, AddCommentRequestDTO addCommentRequestDTO) {
         User seller = userRepository.findByIdAndRole(id, Role.SELLER)
-                .orElseThrow(() -> new RuntimeException("Seller was not found with id " + id));
-        commentService.saveCommentByAnonUser(seller, commentDTO);
+                .orElseThrow(() -> new UserNotFoundException(id));
+        commentService.saveCommentByAnonUser(
+                seller,
+                addCommentRequestDTO.commentMessage(),
+                addCommentRequestDTO.commentRating()
+        );
     }
 
     @Override
@@ -109,7 +112,7 @@ public class UserServiceJPAImpl implements UserService {
                 commentDTOs = commentService.findAllVerifiedCommentsBySeller(user);
             } else {
                 sellerOfferDTOs = sellerOfferService.findAllSellerOffersDTO(user);
-                commentDTOs = commentService.findAllCommentsBySeller(user);
+                commentDTOs = commentService.findAllCommentsBySellerId(user.getId());
             }
             usersDTO.add(new SellerDTO(
                     user.getId(),
@@ -124,16 +127,19 @@ public class UserServiceJPAImpl implements UserService {
     }
 
     @Override
-    public void reviewUser(Integer id, boolean decision){
+    public ReviewStatus reviewUser(Integer id, boolean decision){
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Seller was not found with id " + id));
+                .orElseThrow(() -> new UserNotFoundException(id));
+        if (user.isVerified()){
+           return ReviewStatus.ALREADY_VERIFIED;
+        }
         if (decision) {
             user.setVerified(true);
             userRepository.save(user);
         } else {
-            sellerOfferService.deleteAllByUserId(id);
             userRepository.delete(user);
         }
+        return ReviewStatus.SUCCESS;
     }
 
     @Override
@@ -146,7 +152,7 @@ public class UserServiceJPAImpl implements UserService {
                         seller.getLastName(),
                         sellerOfferService.findAllVerifiedSellerOffers(seller),
                         commentService.findAllVerifiedCommentsBySeller(seller)
-                )).orElseThrow(() -> new RuntimeException("Such seller is not found"));
+                )).orElseThrow(() -> new UserNotFoundException(id));
     }
 
     @Override

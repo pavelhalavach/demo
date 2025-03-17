@@ -1,9 +1,11 @@
 package com.demo.service.impl;
 
-import com.demo.dto.CommentDTO;
+import com.demo.dto.response.CommentDTO;
 import com.demo.entity.Comment;
 import com.demo.entity.User;
+import com.demo.exception.CommentNotFoundException;
 import com.demo.repository.CommentRepository;
+import com.demo.service.ReviewStatus;
 import com.demo.service.CommentService;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +22,10 @@ public class CommentServiceJPAImpl implements CommentService {
 
 
     @Override
-    public void saveCommentByAnonUser(User seller, CommentDTO commentDTO) {
+    public void saveCommentByAnonUser(User seller, String message, Integer rating) {
         Comment comment = new Comment();
-        comment.setMessage(commentDTO.message());
-        comment.setRating(commentDTO.rating());
+        comment.setMessage(message);
+        comment.setRating(rating);
         comment.setVerified(false);
         comment.setSeller(seller);
 
@@ -42,8 +44,8 @@ public class CommentServiceJPAImpl implements CommentService {
                 .collect(Collectors.toList());
     }
     @Override
-    public List<CommentDTO> findAllCommentsBySeller(User seller){
-        return commentRepository.findAllBySeller(seller)
+    public List<CommentDTO> findAllCommentsBySellerId(Integer id){
+        return commentRepository.findAllBySellerId(id)
                 .stream()
                 .map(comment -> new CommentDTO(
                         comment.getId(),
@@ -66,19 +68,33 @@ public class CommentServiceJPAImpl implements CommentService {
     }
 
     @Override
-    public void reviewComment(Integer id, boolean decision){
+    public ReviewStatus reviewComment(Integer id, boolean decision){
         Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Comment was not found with id " + id));
+                .orElseThrow(() -> new CommentNotFoundException(id));
+        if (comment.isVerified()){
+            return ReviewStatus.ALREADY_VERIFIED;
+        }
         if (decision) {
             comment.setVerified(true);
             commentRepository.save(comment);
         } else {
             commentRepository.delete(comment);
         }
+        return ReviewStatus.SUCCESS;
     }
 
     @Override
     public Float findAverageRatingBySellerId(Integer id){
         return commentRepository.findAverageRatingBySellerId(id);
+    }
+
+    @Override
+    public CommentDTO findCommentByIdAndSellerId(Integer sellerId, Integer commentId) {
+        return commentRepository.findCommentByIdAndSellerId(sellerId, commentId)
+                .map(seller -> new CommentDTO(
+                        seller.getId(),
+                        seller.getMessage(),
+                        seller.getRating()
+                )).orElseThrow(() -> new CommentNotFoundException(sellerId, commentId));
     }
 }

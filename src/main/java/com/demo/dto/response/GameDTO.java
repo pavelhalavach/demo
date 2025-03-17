@@ -1,4 +1,4 @@
-package com.demo.dto;
+package com.demo.dto.response;
 
 public record GameDTO(
     Integer id,

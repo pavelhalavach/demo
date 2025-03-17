@@ -13,8 +13,10 @@ import java.util.Optional;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Integer> {
     List<Comment> findAllBySellerAndIsVerified(User seller, boolean isVerified);
-    List<Comment> findAllBySeller(User seller);
     List<Comment> findAllByIsVerified(boolean isVerified);
     @Query("SELECT AVG(c.rating) FROM Comment c WHERE c.seller.id = :sellerId AND c.isVerified = true")
     Float findAverageRatingBySellerId(@Param("sellerId") Integer sellerId);
+    List<Comment> findAllBySellerId(Integer id);
+    Optional<Comment> findCommentByIdAndSellerId(Integer sellerId, Integer commentId);
+    void deleteAllBySellerId(Integer sellerId);
 }

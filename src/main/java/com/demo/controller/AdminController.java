@@ -1,12 +1,13 @@
 package com.demo.controller;
 
 
-import com.demo.dto.CommentDTO;
-import com.demo.dto.GameDTO;
-import com.demo.dto.SellerDTO;
+import com.demo.dto.response.CommentDTO;
+import com.demo.dto.response.GameDTO;
+import com.demo.dto.response.SellerDTO;
 import com.demo.entity.Role;
 import com.demo.entity.User;
 import com.demo.security.CustomUserDetails;
+import com.demo.service.ReviewStatus;
 import com.demo.service.CommentService;
 import com.demo.service.GameService;
 import com.demo.service.UserService;
@@ -58,13 +59,18 @@ public class AdminController {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User admin = customUserDetails.getUser();
 
-        if (admin.isVerified()) {
-            userService.reviewUser(id, decision);
-        } else {
+        if (!admin.isVerified()) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body("You are not verified to do that. Please contact Head Admin");
         }
+
+        if (userService.reviewUser(id, decision) == ReviewStatus.ALREADY_VERIFIED){
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body("User is already verified");
+        }
+
         return ResponseEntity.ok("Successfully reviewed");
     }
 
@@ -76,12 +82,16 @@ public class AdminController {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User admin = customUserDetails.getUser();
 
-        if (admin.isVerified()) {
-            commentService.reviewComment(id, decision);
-        } else {
+        if (!admin.isVerified()) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body("You are not verified to do that. Please contact Head Admin");
+        }
+
+        if (commentService.reviewComment(id, decision) == ReviewStatus.ALREADY_VERIFIED) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body("Comment is already verified");
         }
         return ResponseEntity.ok("Successfully reviewed");
     }
@@ -94,13 +104,18 @@ public class AdminController {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User admin = customUserDetails.getUser();
 
-        if (admin.isVerified()) {
-            gameService.reviewGame(id, decision);
-        } else {
+        if (!admin.isVerified()) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body("You are not verified to do that. Please contact Head Admin");
         }
+
+        if (gameService.reviewGame(id, decision) == ReviewStatus.ALREADY_VERIFIED){
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body("Game is already verified");
+        }
+
         return ResponseEntity.ok("Successfully reviewed");
     }
 }

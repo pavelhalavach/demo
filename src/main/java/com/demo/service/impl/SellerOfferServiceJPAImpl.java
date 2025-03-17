@@ -1,19 +1,18 @@
 package com.demo.service.impl;
 
-import com.demo.dto.SellerOfferDTO;
+import com.demo.dto.request.RegisterSellerOfferDTO;
+import com.demo.dto.response.SellerOfferDTO;
 import com.demo.entity.Game;
 import com.demo.entity.SellerOffer;
 import com.demo.entity.User;
 import com.demo.repository.SellerOfferRepository;
 import com.demo.service.GameService;
 import com.demo.service.SellerOfferService;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Transactional
 @Service
 public class SellerOfferServiceJPAImpl implements SellerOfferService {
     private final SellerOfferRepository sellerOfferRepository;
@@ -25,12 +24,12 @@ public class SellerOfferServiceJPAImpl implements SellerOfferService {
     }
 
     @Override
-    public void saveSellerOffer(User seller, SellerOfferDTO sellerOfferDTO) {
-        Game gameFromDB = gameService.findByNameNormalized(sellerOfferDTO.name());
+    public void saveSellerOffer(User seller, RegisterSellerOfferDTO registerSellerOfferDTO) {
+        Game gameFromDB = gameService.findByNameNormalized(registerSellerOfferDTO.name());
         if (gameFromDB == null){
-            gameFromDB = gameService.saveGame(sellerOfferDTO);
+            gameFromDB = gameService.saveGame(registerSellerOfferDTO);
         }
-        sellerOfferRepository.save(new SellerOffer(seller, gameFromDB, sellerOfferDTO.description()));
+        sellerOfferRepository.save(new SellerOffer(seller, gameFromDB, registerSellerOfferDTO.description()));
     }
 
     @Override
@@ -64,11 +63,6 @@ public class SellerOfferServiceJPAImpl implements SellerOfferService {
             }
         }
         return false;
-    }
-
-    @Override
-    public void deleteAllByUserId(Integer id) {
-        sellerOfferRepository.deleteAllBySellerId(id);
     }
 
     @Override
