@@ -7,6 +7,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -67,4 +68,8 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
+//    @ExceptionHandler(AccessDeniedException.class)
+//    public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException ex) {
+//        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to access this resource.");
+//    }
 }

@@ -11,7 +11,7 @@ public interface GameService {
     List<GameDTO> findAllGames();
     List<GameDTO> findAllGamesByIsVerified(boolean isVerified);
     GameDTO findGameById(Integer id);
-    Game findByNameNormalized(String name);
+    Game findGameByNameNormalized(String name);
     ReviewStatus reviewGame(Integer id, boolean decision);
 }
 

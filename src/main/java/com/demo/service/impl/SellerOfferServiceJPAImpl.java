@@ -8,6 +8,7 @@ import com.demo.entity.User;
 import com.demo.repository.SellerOfferRepository;
 import com.demo.service.GameService;
 import com.demo.service.SellerOfferService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public class SellerOfferServiceJPAImpl implements SellerOfferService {
 
     @Override
     public void saveSellerOffer(User seller, RegisterSellerOfferDTO registerSellerOfferDTO) {
-        Game gameFromDB = gameService.findByNameNormalized(registerSellerOfferDTO.name());
+        Game gameFromDB = gameService.findGameByNameNormalized(registerSellerOfferDTO.name());
         if (gameFromDB == null){
             gameFromDB = gameService.saveGame(registerSellerOfferDTO);
         }
@@ -66,6 +67,7 @@ public class SellerOfferServiceJPAImpl implements SellerOfferService {
     }
 
     @Override
+    @Transactional
     public void deleteBySellerAndGameId(User seller, Integer gameId){
         sellerOfferRepository.deleteBySellerAndGameId(seller, gameId);
     }

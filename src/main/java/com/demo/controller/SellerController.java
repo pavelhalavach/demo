@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/seller")
@@ -20,15 +21,15 @@ public class SellerController {
         this.sellerOfferService = sellerOfferService;
     }
 
-    @GetMapping("/games")
-    public List<SellerOfferDTO> getGames(Authentication authentication) {
+    @GetMapping("/offers")
+    public List<SellerOfferDTO> findSellerOffers(Authentication authentication) {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User seller = customUserDetails.getUser();
         return sellerOfferService.findAllVerifiedSellerOffers(seller);
     }
 
-    @PostMapping("/game")
-    public ResponseEntity<String> addGame(
+    @PostMapping("/offer")
+    public ResponseEntity<String> addSellerOffer(
             @RequestBody RegisterSellerOfferDTO registerSellerOfferDTO,
             Authentication authentication
     ) {
@@ -38,21 +39,22 @@ public class SellerController {
         return ResponseEntity.ok("Game successfully added");
     }
 
-    @DeleteMapping("/game/{id}")
-    public ResponseEntity<String> deleteGame(@PathVariable(name="id") Integer id, Authentication authentication){
+    @DeleteMapping("/offer/{id}")
+    public ResponseEntity<String> deleteSellerOffer(@PathVariable(name="id") Integer id, Authentication authentication){
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User seller = customUserDetails.getUser();
         sellerOfferService.deleteBySellerAndGameId(seller, id);
         return ResponseEntity.ok("Game successfully deleted");
     }
 
-    @PutMapping("/game/{id}")
-    public ResponseEntity<String> updateGame(
+    @PatchMapping("/offer/{id}")
+    public ResponseEntity<String> updateSellerOffer(
             @PathVariable Integer id,
-            @RequestBody String updatedDescription,
+            @RequestBody Map<String,String> updates,
             Authentication authentication){
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User seller = customUserDetails.getUser();
+        String updatedDescription = updates.get("updatedDescription");
         sellerOfferService.updateOfferDescription(seller, id, updatedDescription);
         return ResponseEntity.ok("Game successfully updated");
     }

@@ -13,6 +13,6 @@ import java.util.Optional;
 public interface SellerOfferRepository extends JpaRepository<SellerOffer, Integer> {
     List<SellerOffer> findAllBySellerAndGameIsVerified(User seller, boolean isVerified);
     List<SellerOffer> findAllBySeller(User seller);
-    void deleteAllBySellerId(Integer id);
     void deleteBySellerAndGameId(User seller, Integer gameId);
+    Optional<SellerOffer> findByGameId(Integer id);
 }

@@ -44,6 +44,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/register/**", "/login").permitAll()
                         .requestMatchers("/anon/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/seller/**").hasRole("SELLER")
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout

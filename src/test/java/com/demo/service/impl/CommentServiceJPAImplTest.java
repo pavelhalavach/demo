@@ -3,7 +3,9 @@ package com.demo.service.impl;
 import com.demo.dto.response.CommentDTO;
 import com.demo.entity.Comment;
 import com.demo.entity.User;
+import com.demo.exception.CommentNotFoundException;
 import com.demo.repository.CommentRepository;
+import com.demo.service.ReviewStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,8 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,18 +34,16 @@ public class CommentServiceJPAImplTest {
     public void shouldSaveCommentByAnonUser() {
         User seller = new User();
         commentService.saveCommentByAnonUser(seller, "Great product!", 5);
-        ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
 
-        verify(commentRepository, times(1)).save(captor.capture());
-
-        Comment actual = captor.getValue();
-        assertEquals("Great product!", actual.getMessage());
-        assertEquals(seller, actual.getSeller());
-        assertEquals(5, actual.getRating());
+        verify(commentRepository, times(1)).save(argThat(comment ->
+                "Great product!".equals(comment.getMessage())
+                        && seller.equals(comment.getSeller())
+                        && comment.getRating() == 5
+        ));
     }
 
     @Test
-    public void shouldReturnAllVerifiedCommentsBySeller() {
+    public void shouldFindAllVerifiedCommentsBySeller() {
         User seller = new User();
         Comment comment = new Comment(2, "Excellent", 5, seller, true, new Date());
         when(commentRepository.findAllBySellerAndIsVerified(seller, true)).thenReturn(Arrays.asList(comment));
@@ -77,23 +76,47 @@ public class CommentServiceJPAImplTest {
     public void shouldReviewCommentAndApprove() {
         Comment comment = new Comment(1, "Good", 4, new User(), false, new Date());
         when(commentRepository.findById(1)).thenReturn(Optional.of(comment));
-        commentService.reviewComment(1, true);
+        ReviewStatus result = commentService.reviewComment(1, true);
 
         verify(commentRepository, times(1)).findById(1);
         verify(commentRepository, times(1)).save(comment);
         verify(commentRepository, times(0)).delete(comment);
         assertTrue(comment.isVerified());
+        assertEquals(ReviewStatus.SUCCESS, result);
     }
 
     @Test
     public void shouldReviewCommentAndReject() {
         Comment comment = new Comment(1, "Good", 4, new User(), false, new Date());
         when(commentRepository.findById(1)).thenReturn(Optional.of(comment));
-        commentService.reviewComment(1, false);
+        ReviewStatus result = commentService.reviewComment(1, false);
 
         verify(commentRepository, times(1)).findById(1);
         verify(commentRepository, times(1)).delete(comment);
         verify(commentRepository, times(0)).save(comment);
+        assertEquals(ReviewStatus.SUCCESS, result);
+    }
+
+    @Test
+    public void shouldNotReviewVerifiedComment(){
+        Comment comment = new Comment(1, "Good", 4, new User(), true, new Date());
+        when(commentRepository.findById(1)).thenReturn(Optional.of(comment));
+        ReviewStatus resultTrue = commentService.reviewComment(1, true);
+        ReviewStatus resultFalse = commentService.reviewComment(1, false);
+
+        verify(commentRepository, times(2)).findById(1);
+        verify(commentRepository, times(0)).save(comment);
+        verify(commentRepository, times(0)).delete(comment);
+        assertEquals(ReviewStatus.ALREADY_VERIFIED, resultTrue);
+        assertEquals(ReviewStatus.ALREADY_VERIFIED, resultFalse);
+    }
+
+    @Test
+    public void shouldNotReviewCommentWithWrongId(){
+        when(commentRepository.findById(1)).thenReturn(Optional.empty());
+
+        assertThrows(CommentNotFoundException.class, () -> commentService.reviewComment(1, true));
+        assertThrows(CommentNotFoundException.class, () -> commentService.reviewComment(1, false));
     }
 
     @Test

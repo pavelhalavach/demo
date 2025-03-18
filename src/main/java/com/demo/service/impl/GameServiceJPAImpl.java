@@ -62,7 +62,7 @@ public class GameServiceJPAImpl implements GameService {
     }
 
     @Override
-    public Game findByNameNormalized(String name) {
+    public Game findGameByNameNormalized(String name) {
         return gameRepository.findByNameNormalized(name);
     }
 
@@ -81,5 +81,4 @@ public class GameServiceJPAImpl implements GameService {
         }
         return ReviewStatus.SUCCESS;
     }
-
 }

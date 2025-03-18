@@ -37,6 +37,7 @@ public class UserServiceJPAImpl implements UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+//    SELLER REGISTRATION
     @Override
     public void saveSeller(RegisterSellerRequestDTO registerSellerRequestDTO) {
         User seller = new User();
@@ -86,6 +87,7 @@ public class UserServiceJPAImpl implements UserService {
         );
     }
 
+//    ADMIN REGISTRATION
     @Override
     public void saveAdmin(RegisterAdminRequestDTO registerAdminRequestDTO){
         User admin = new User();
