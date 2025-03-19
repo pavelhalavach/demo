@@ -7,7 +7,6 @@ import com.demo.dto.response.SellerDTO;
 import com.demo.dto.response.ShowTopSellersResponseDTO;
 import com.demo.entity.Role;
 import com.demo.service.CommentService;
-import com.demo.service.SellerOfferService;
 import com.demo.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +16,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/anon")
 public class AnonUserController {
-    private final SellerOfferService sellerOfferService;
     private final UserService userService;
     private final CommentService commentService;
 
-    public AnonUserController(SellerOfferService sellerOfferService, UserService userService, CommentService commentService) {
-        this.sellerOfferService = sellerOfferService;
+    public AnonUserController(UserService userService, CommentService commentService) {
         this.userService = userService;
         this.commentService = commentService;
     }
@@ -39,7 +36,7 @@ public class AnonUserController {
 
     @GetMapping("/sellers/{id}")
     public SellerDTO findSellerById(@PathVariable Integer id) {
-        return userService.findSellerById(id);
+        return userService.findVerifiedSellerById(id);
     }
 
     @GetMapping("/sellers/{id}/comments")
@@ -58,7 +55,7 @@ public class AnonUserController {
         return userService.sortSellersByRating();
     }
 
-    @GetMapping("/sellers/ratingInRange")
+    @GetMapping("/sellers/rating_in_range")
     public List<ShowTopSellersResponseDTO> showSellersByRatingInRange(
             @RequestParam Float min,
             @RequestParam Float max
@@ -69,7 +66,7 @@ public class AnonUserController {
     @PostMapping("/sellers/comment")
     public ResponseEntity<String> addCommentAndRegisterSeller(
             @RequestBody AddCommentWithRegRequestDTO addCommentWithRegRequestDTO){
-        userService.saveSellerByAnonUser(addCommentWithRegRequestDTO);
+        userService.registerSellerByAnonUser(addCommentWithRegRequestDTO);
         return ResponseEntity.ok("Comment added");
     }
 
@@ -77,7 +74,7 @@ public class AnonUserController {
     public ResponseEntity<String> addCommentToExistingSeller(
             @PathVariable Integer id,
             @RequestBody AddCommentRequestDTO addCommentRequestDTO){
-        userService.saveSellerByAnonUser(id, addCommentRequestDTO);
+        userService.leaveCommentToSellerByAnonUser(id, addCommentRequestDTO);
         return ResponseEntity.ok("Comment added");
     }
 

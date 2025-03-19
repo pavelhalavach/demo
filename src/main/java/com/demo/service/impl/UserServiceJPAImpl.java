@@ -7,16 +7,20 @@ import com.demo.dto.response.SellerOfferDTO;
 import com.demo.dto.response.ShowTopSellersResponseDTO;
 import com.demo.entity.Role;
 import com.demo.entity.User;
+import com.demo.exception.EmailAlreadyTakenException;
+import com.demo.exception.NicknameAlreadyTakenException;
+import com.demo.exception.TokenNotValidException;
 import com.demo.exception.UserNotFoundException;
 import com.demo.repository.UserRepository;
-import com.demo.service.CommentService;
-import com.demo.service.ReviewStatus;
-import com.demo.service.SellerOfferService;
-import com.demo.service.UserService;
+import com.demo.service.*;
+import com.demo.util.AesEncryptionUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -26,20 +30,30 @@ public class UserServiceJPAImpl implements UserService {
     private final SellerOfferService sellerOfferService;
     private final CommentService commentService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final AesEncryptionUtil aesEncryptionUtil;
 
     public UserServiceJPAImpl(
             UserRepository userRepository,
             SellerOfferService sellerOfferService, CommentService commentService,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder, EmailService emailService, AesEncryptionUtil aesEncryptionUtil) {
         this.userRepository = userRepository;
         this.sellerOfferService = sellerOfferService;
         this.commentService = commentService;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+        this.aesEncryptionUtil = aesEncryptionUtil;
     }
 
-//    SELLER REGISTRATION
     @Override
-    public void saveSeller(RegisterSellerRequestDTO registerSellerRequestDTO) {
+    public void registerSeller(RegisterSellerRequestDTO registerSellerRequestDTO) {
+        if (userRepository.findByEmail(registerSellerRequestDTO.email()).isPresent()){
+            throw new EmailAlreadyTakenException(registerSellerRequestDTO.email());
+        }
+        if (userRepository.findByNickname(registerSellerRequestDTO.nickname()).isPresent()){
+            throw new NicknameAlreadyTakenException(registerSellerRequestDTO.nickname());
+        }
+
         User seller = new User();
         seller.setNickname(registerSellerRequestDTO.nickname());
         seller.setFirstName(registerSellerRequestDTO.firstName());
@@ -48,22 +62,31 @@ public class UserServiceJPAImpl implements UserService {
         seller.setPassword(passwordEncoder.encode(registerSellerRequestDTO.password()));
         seller.setRole(Role.valueOf("SELLER"));
         seller.setVerified(false);
+        seller.setEnabled(false);
         seller = userRepository.save(seller);
 
         for (RegisterSellerOfferDTO registerSellerOfferDTO : registerSellerRequestDTO.games()) {
             sellerOfferService.saveSellerOffer(seller, registerSellerOfferDTO);
         }
+
+        String tokenData = "{\"user_id\": " + seller.getId() + ", \"time\": " + Instant.now().getEpochSecond() + "}";
+        String encryptedToken = aesEncryptionUtil.encrypt(tokenData);
+        String confirmationLink = "http://localhost:8080/confirm_registration/" + encryptedToken;
+        emailService.sendEmail(
+                seller.getEmail(),
+                "Confirm your registration",
+                "To confirm your registration, click the link: " + confirmationLink);
     }
 
-//  REGISTRATION SELLER PROFILE + ADDING COMMENT
     @Override
-    public void saveSellerByAnonUser(AddCommentWithRegRequestDTO addCommentWithRegRequestDTO) {
+    public void registerSellerByAnonUser(AddCommentWithRegRequestDTO addCommentWithRegRequestDTO) {
         User seller = new User();
         seller.setNickname(addCommentWithRegRequestDTO.sellerNickname());
         seller.setFirstName(addCommentWithRegRequestDTO.sellerFirstName());
         seller.setLastName(addCommentWithRegRequestDTO.sellerLastName());
         seller.setRole(Role.valueOf("SELLER"));
         seller.setVerified(false);
+        seller.setEnabled(false);
         seller = userRepository.save(seller);
         for (String gameName : addCommentWithRegRequestDTO.sellerGames()) {
             sellerOfferService.saveSellerOffer(seller, new RegisterSellerOfferDTO(gameName, null));
@@ -75,9 +98,8 @@ public class UserServiceJPAImpl implements UserService {
         );
     }
 
-//  ADDING COMMENT TO EXISTING SELLER
     @Override
-    public void saveSellerByAnonUser(Integer id, AddCommentRequestDTO addCommentRequestDTO) {
+    public void leaveCommentToSellerByAnonUser(Integer id, AddCommentRequestDTO addCommentRequestDTO) {
         User seller = userRepository.findByIdAndRole(id, Role.SELLER)
                 .orElseThrow(() -> new UserNotFoundException(id));
         commentService.saveCommentByAnonUser(
@@ -87,9 +109,15 @@ public class UserServiceJPAImpl implements UserService {
         );
     }
 
-//    ADMIN REGISTRATION
     @Override
-    public void saveAdmin(RegisterAdminRequestDTO registerAdminRequestDTO){
+    public void registerAdmin(RegisterAdminRequestDTO registerAdminRequestDTO){
+        if (userRepository.findByEmail(registerAdminRequestDTO.email()).isPresent()){
+            throw new EmailAlreadyTakenException(registerAdminRequestDTO.email());
+        }
+        if (userRepository.findByNickname(registerAdminRequestDTO.nickname()).isPresent()){
+            throw new NicknameAlreadyTakenException(registerAdminRequestDTO.nickname());
+        }
+
         User admin = new User();
         admin.setNickname(registerAdminRequestDTO.nickname());
         admin.setFirstName(registerAdminRequestDTO.firstName());
@@ -98,9 +126,68 @@ public class UserServiceJPAImpl implements UserService {
         admin.setPassword(passwordEncoder.encode(registerAdminRequestDTO.password()));
         admin.setRole(Role.valueOf("ADMIN"));
         admin.setVerified(false);
+        admin.setEnabled(false);
         userRepository.save(admin);
+
+        String tokenData = "{\"user_id\": " + admin.getId() + ", \"time\": " + Instant.now().getEpochSecond() + "}";
+        String encryptedToken = aesEncryptionUtil.encrypt(tokenData);
+        String confirmationLink = "http://localhost:8080/confirm_registration/" + encryptedToken;
+        emailService.sendEmail(
+                admin.getEmail(),
+                "Confirm your registration",
+                "To confirm your registration, click the link: " + confirmationLink);
     }
 
+    @Override
+    public boolean checkRegistrationTokenDate(String token){
+        String decryptedToken = aesEncryptionUtil.decrypt(token);
+        long tokenTime = Long.parseLong(decryptedToken.split("\"time\":")[1].split("}")[0].trim());
+
+        return Instant.now().getEpochSecond() - tokenTime <= 86400;
+    }
+
+    @Override
+    public void confirmRegistration(String token) {
+        String decryptedToken = aesEncryptionUtil.decrypt(token);
+        Integer userId = Integer.parseInt(decryptedToken.split("\"user_id\":")[1].split(",")[0].trim());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new TokenNotValidException(token));
+
+        user.setEnabled(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void sendRestorationCodeToEmail(String email) {
+        if (userRepository.findByEmail(email).isEmpty()){
+            throw new UserNotFoundException(email);
+        }
+
+        String code = "{\"email\": " + email + ", \"time\": " + Instant.now().getEpochSecond() + "}";
+        String encryptedCode = aesEncryptionUtil.encrypt(code);
+        emailService.sendEmail(
+                email,
+                "Code for password restoration",
+                "To restore your password, use the code " +
+                        encryptedCode + " on the http://localhost:8080/help/reset");
+    }
+
+    @Override
+    public boolean checkRestorationCode(String code, String email) {
+        String decryptedToken = aesEncryptionUtil.decrypt(code);
+        long tokenTime = Long.parseLong(decryptedToken.split("\"time\":")[1].split("}")[0].trim());
+        String emailFromCode = decryptedToken.split("\"email\":")[1].split(",")[0].trim();
+
+        return Instant.now().getEpochSecond() - tokenTime <= 86400 && email.equals(emailFromCode);
+    }
+
+    @Override
+    public void resetUserPassword(String email, String newPassword){
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 
     @Override
     public List<SellerDTO> findAllUsersByIsVerified(Role role, boolean isVerified) {
@@ -145,8 +232,8 @@ public class UserServiceJPAImpl implements UserService {
     }
 
     @Override
-    public SellerDTO findSellerById(Integer id) {
-        return userRepository.findByIdAndRole(id, Role.SELLER)
+    public SellerDTO findVerifiedSellerById(Integer id) {
+        return userRepository.findAllByIdAndIsVerified(id, true)
                 .map(seller -> new SellerDTO(
                         seller.getId(),
                         seller.getNickname(),

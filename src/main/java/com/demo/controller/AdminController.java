@@ -1,6 +1,7 @@
 package com.demo.controller;
 
 
+import com.demo.dto.request.DecisionOnReviewDTO;
 import com.demo.dto.response.CommentDTO;
 import com.demo.dto.response.GameDTO;
 import com.demo.dto.response.SellerDTO;
@@ -11,6 +12,7 @@ import com.demo.service.ReviewStatus;
 import com.demo.service.CommentService;
 import com.demo.service.GameService;
 import com.demo.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -53,7 +55,7 @@ public class AdminController {
 
     @PostMapping("/user/{id}")
     public ResponseEntity<String> reviewUser(@PathVariable(name="id") Integer id,
-                                             @RequestBody boolean decision,
+                                             @RequestBody @Valid DecisionOnReviewDTO decisionOnReviewDTO,
                                              Authentication authentication
     ){
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -65,7 +67,7 @@ public class AdminController {
                     .body("You are not verified to do that. Please contact Head Admin");
         }
 
-        if (userService.reviewUser(id, decision) == ReviewStatus.ALREADY_VERIFIED){
+        if (userService.reviewUser(id, decisionOnReviewDTO.decision()) == ReviewStatus.ALREADY_VERIFIED){
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body("User is already verified");
@@ -76,7 +78,7 @@ public class AdminController {
 
     @PostMapping("/comment/{id}")
     public ResponseEntity<String> reviewComment(@PathVariable Integer id,
-                                                @RequestBody boolean decision,
+                                                @RequestBody @Valid DecisionOnReviewDTO decisionOnReviewDTO,
                                                 Authentication authentication
     ){
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -88,7 +90,7 @@ public class AdminController {
                     .body("You are not verified to do that. Please contact Head Admin");
         }
 
-        if (commentService.reviewComment(id, decision) == ReviewStatus.ALREADY_VERIFIED) {
+        if (commentService.reviewComment(id, decisionOnReviewDTO.decision()) == ReviewStatus.ALREADY_VERIFIED) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body("Comment is already verified");
@@ -98,8 +100,8 @@ public class AdminController {
 
     @PostMapping("/game/{id}")
     public ResponseEntity<String> reviewGame(@PathVariable Integer id,
-                                            @RequestBody boolean decision,
-                                            Authentication authentication
+                                             @RequestBody @Valid DecisionOnReviewDTO decisionOnReviewDTO,
+                                             Authentication authentication
     ){
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User admin = customUserDetails.getUser();
@@ -110,7 +112,7 @@ public class AdminController {
                     .body("You are not verified to do that. Please contact Head Admin");
         }
 
-        if (gameService.reviewGame(id, decision) == ReviewStatus.ALREADY_VERIFIED){
+        if (gameService.reviewGame(id, decisionOnReviewDTO.decision()) == ReviewStatus.ALREADY_VERIFIED){
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .body("Game is already verified");

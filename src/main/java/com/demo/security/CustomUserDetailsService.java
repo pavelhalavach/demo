@@ -1,6 +1,8 @@
 package com.demo.security;
 
 import com.demo.entity.User;
+import com.demo.exception.UserNotEnabledException;
+import com.demo.exception.UserNotFoundException;
 import com.demo.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,9 +19,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username);
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found");
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
+        if (!user.isEnabled()) {
+            throw new UserNotEnabledException("Please confirm your email before logging in");
         }
         return new CustomUserDetails(user);
     }

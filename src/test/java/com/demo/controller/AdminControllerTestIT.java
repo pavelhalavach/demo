@@ -77,7 +77,7 @@ public class AdminControllerTestIT {
                 sellerOffersDTO
         );
         if (userRepository.findByNickname("seller1").isEmpty()) {
-            userService.saveSeller(registerSellerRequestDTO1);
+            userService.registerSeller(registerSellerRequestDTO1);
             commentService.saveCommentByAnonUser(
                     userRepository.findByNickname("seller1")
                             .orElseThrow(() -> new UserNotFoundException("seller1")),
@@ -104,7 +104,7 @@ public class AdminControllerTestIT {
                 sellerOffersDTO
         );
         if (userRepository.findByNickname("seller2").isEmpty()) {
-            userService.saveSeller(registerSellerRequestDTO2);
+            userService.registerSeller(registerSellerRequestDTO2);
             commentService.saveCommentByAnonUser(
                     userRepository.findByNickname("seller2")
                             .orElseThrow(() -> new UserNotFoundException("seller2")),
@@ -125,6 +125,7 @@ public class AdminControllerTestIT {
                 "admin@example.com",
                 passwordEncoder.encode("123"),
                 true,
+                true,
                 new Date(),
                 Role.ADMIN
         );
@@ -136,6 +137,7 @@ public class AdminControllerTestIT {
                 "admin1@example.com",
                 passwordEncoder.encode("123"),
                 false,
+                true,
                 new Date(),
                 Role.ADMIN
         );
@@ -213,7 +215,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldNotReviewUserByUnverifiedAdmin() throws Exception {
         HttpSession session = getAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
         User user = userRepository.findByNickname("seller1")
                 .orElseThrow(() -> new UserNotFoundException("seller1"));
 
@@ -227,7 +229,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldNotReviewVerifiedUserByVerifiedAdmin() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
         User user = userRepository.findByNickname("seller1")
                 .orElseThrow(() -> new UserNotFoundException("seller1"));
 
@@ -241,7 +243,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldReviewUserByVerifiedAdminAsApproved() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
         User user = userRepository.findByNickname("seller2")
                 .orElseThrow(() -> new UserNotFoundException("seller2"));
 
@@ -259,7 +261,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldReviewUserByVerifiedAdminAsDeclined() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "false";
+        String json = "{\"decision\": false}";
         User user = userRepository.findByNickname("seller2")
                 .orElseThrow(() -> new UserNotFoundException("seller2"));
 
@@ -275,7 +277,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldNotReviewNonExistingUser() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
         mockMvc.perform(post("/admin/user/1000")
                         .session((MockHttpSession) session)
                         .contentType("application/json")
@@ -297,7 +299,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldNotReviewCommentByUnverifiedAdmin() throws Exception {
         HttpSession session = getAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
 
         mockMvc.perform(post("/admin/comment/1")
                         .session((MockHttpSession) session)
@@ -309,7 +311,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldNotReviewVerifiedCommentByVerifiedAdmin() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
         mockMvc.perform(post("/admin/comment/1")
                         .session((MockHttpSession) session)
                         .contentType("application/json")
@@ -320,7 +322,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldReviewCommentByVerifiedAdminAsApproved() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
         mockMvc.perform(post("/admin/comment/3")
                         .session((MockHttpSession) session)
                         .contentType("application/json")
@@ -335,7 +337,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldReviewCommentByVerifiedAdminAsDeclined() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "false";
+        String json = "{\"decision\": false}";
         mockMvc.perform(post("/admin/comment/2")
                         .session((MockHttpSession) session)
                         .contentType("application/json")
@@ -348,7 +350,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldNotReviewNonExistingComment() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
         mockMvc.perform(post("/admin/comment/1000")
                         .session((MockHttpSession) session)
                         .contentType("application/json")
@@ -370,7 +372,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldNotReviewGameByUnverifiedAdmin() throws Exception {
         HttpSession session = getAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
         mockMvc.perform(post("/admin/game/1")
                         .session((MockHttpSession) session)
                         .contentType("application/json")
@@ -381,7 +383,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldNotReviewVerifiedGameByVerifiedAdmin() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
         mockMvc.perform(post("/admin/game/1")
                         .session((MockHttpSession) session)
                         .contentType("application/json")
@@ -392,7 +394,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldReviewGameByVerifiedAdminAsApproved() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
         mockMvc.perform(post("/admin/game/2")
                         .session((MockHttpSession) session)
                         .contentType("application/json")
@@ -407,7 +409,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldReviewGameByVerifiedAdminAsDeclined() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "false";
+        String json = "{\"decision\": false}";
         mockMvc.perform(post("/admin/game/3")
                         .session((MockHttpSession) session)
                         .contentType("application/json")
@@ -420,7 +422,7 @@ public class AdminControllerTestIT {
     @Test
     void shouldNotReviewNonExistingGame() throws Exception {
         HttpSession session = getVerifiedAdminSession();
-        String json = "true";
+        String json = "{\"decision\": true}";
         mockMvc.perform(post("/admin/game/1000")
                         .session((MockHttpSession) session)
                         .contentType("application/json")

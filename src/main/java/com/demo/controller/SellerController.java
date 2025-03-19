@@ -1,16 +1,17 @@
 package com.demo.controller;
 
 import com.demo.dto.request.RegisterSellerOfferDTO;
+import com.demo.dto.request.UpdateSellerRequestDTO;
 import com.demo.dto.response.SellerOfferDTO;
 import com.demo.entity.User;
 import com.demo.security.CustomUserDetails;
 import com.demo.service.SellerOfferService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/seller")
@@ -50,12 +51,11 @@ public class SellerController {
     @PatchMapping("/offer/{id}")
     public ResponseEntity<String> updateSellerOffer(
             @PathVariable Integer id,
-            @RequestBody Map<String,String> updates,
+            @RequestBody @Valid UpdateSellerRequestDTO updateSellerRequestDTO,
             Authentication authentication){
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         User seller = customUserDetails.getUser();
-        String updatedDescription = updates.get("updatedDescription");
-        sellerOfferService.updateOfferDescription(seller, id, updatedDescription);
+        sellerOfferService.updateOfferDescription(seller, id, updateSellerRequestDTO.updatedDescription());
         return ResponseEntity.ok("Game successfully updated");
     }
 }

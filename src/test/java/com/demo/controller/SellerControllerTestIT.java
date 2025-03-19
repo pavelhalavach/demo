@@ -68,7 +68,11 @@ public class SellerControllerTestIT {
                 sellerOffersDTO
         );
         if (userRepository.findByNickname("seller1").isEmpty()) {
-            userService.saveSeller(registerSellerRequestDTO);
+            userService.registerSeller(registerSellerRequestDTO);
+            User seller = userRepository.findByNickname("seller1")
+                    .orElseThrow(() -> new UserNotFoundException("seller1"));
+            seller.setEnabled(true);
+            userRepository.save(seller);
         }
         Game game1 = gameRepository.findByNameNormalized("game1");
         game1.setVerified(true);

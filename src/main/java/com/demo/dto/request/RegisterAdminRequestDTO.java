@@ -13,7 +13,7 @@ public record RegisterAdminRequestDTO (
     String firstName,
     @NotBlank(message = "Last Name cannot be empty")
     String lastName,
-    @NotNull(message = "Email cannot be null")
+    @NotBlank(message = "Email cannot be empty or null")
     @Email(message = "Invalid email format")
     String email,
     @NotBlank(message = "Password cannot be empty")
